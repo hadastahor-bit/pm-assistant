@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: project-planning-agent
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: SESSION_STORE
+        value: memory
+      - key: CLAUDE_MODEL
+        value: claude-opus-4-6
+      - key: ANTHROPIC_API_KEY
+        sync: false  # Enter this manually in the Render dashboard — never hardcode
