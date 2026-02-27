@@ -832,11 +832,10 @@ function insertStageCard(stageKey) {
     </div>`;
 
   messagesEl.appendChild(card);
-  // Delay scroll until after browser has laid out the new card
+  // Scroll to show the TOP of the card — user fills top-to-bottom and scrolls naturally to the button
   setTimeout(() => {
-    const btn = document.getElementById(`submit-${stageKey}`);
-    if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    else messagesEl.scrollTop = messagesEl.scrollHeight;
+    const newCard = document.getElementById(cardId);
+    if (newCard) newCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 80);
 }
 
