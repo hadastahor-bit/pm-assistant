@@ -145,6 +145,7 @@
       flex-direction: column;
       gap: 12px;
       scroll-behavior: smooth;
+      position: relative;   /* makes this the offsetParent for children */
     }
 
     /* ── Bubbles ── */
@@ -832,15 +833,14 @@ function insertStageCard(stageKey) {
     </div>`;
 
   messagesEl.appendChild(card);
-  // Directly calculate and set scroll position — scrollIntoView is unreliable in nested flex containers
+  // offsetTop is relative to #messages (its offsetParent via position:relative)
+  // Wait 200ms so layout and animation are fully settled before measuring
   setTimeout(() => {
     const newCard = document.getElementById(cardId);
     if (newCard) {
-      const containerRect = messagesEl.getBoundingClientRect();
-      const cardRect      = newCard.getBoundingClientRect();
-      messagesEl.scrollTop += cardRect.top - containerRect.top - 12;
+      messagesEl.scrollTop = newCard.offsetTop - 16;
     }
-  }, 120);
+  }, 200);
 }
 
 function submitStageForm(stageKey) {
