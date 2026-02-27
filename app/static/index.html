@@ -832,7 +832,12 @@ function insertStageCard(stageKey) {
     </div>`;
 
   messagesEl.appendChild(card);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  // Delay scroll until after browser has laid out the new card
+  setTimeout(() => {
+    const btn = document.getElementById(`submit-${stageKey}`);
+    if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    else messagesEl.scrollTop = messagesEl.scrollHeight;
+  }, 80);
 }
 
 function submitStageForm(stageKey) {
