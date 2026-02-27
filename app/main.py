@@ -50,7 +50,11 @@ async def health_check():
 
 @app.get("/", include_in_schema=False)
 async def serve_ui():
-    return FileResponse(STATIC_DIR / "index.html")
+    response = FileResponse(STATIC_DIR / "index.html")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
