@@ -14,6 +14,7 @@
       --s4: #f59e0b;
       --s5: #ef4444;
       --done: #10b981;
+      --stage-color: #3b82f6;   /* updated dynamically with each stage */
       --bg: #f0f2f5;
       --surface: #ffffff;
       --text: #1e293b;
@@ -51,33 +52,91 @@
     }
     .header-logo {
       width: 38px; height: 38px;
-      background: var(--s1);
+      background: var(--stage-color);
       border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 18px;
+      transition: background 0.4s ease;
+      flex-shrink: 0;
     }
     .header-info h1 { font-size: 16px; font-weight: 700; }
     .header-info p  { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 2px; }
 
+    /* ══ STEPPER — named steps with dots and connecting lines ══ */
     #stepper {
       background: #0f172a;
-      padding: 0 20px 16px;
+      padding: 14px 24px 18px;
       display: flex;
-      gap: 6px;
-      align-items: center;
+      align-items: flex-start;
     }
-    .step {
-      flex: 1; height: 6px; border-radius: 3px;
-      background: rgba(255,255,255,0.15);
-      transition: background 0.4s ease;
-    }
-    .step[data-color="1"] { --c: var(--s1); }
-    .step[data-color="2"] { --c: var(--s2); }
-    .step[data-color="3"] { --c: var(--s3); }
-    .step[data-color="4"] { --c: var(--s4); }
-    .step[data-color="5"] { --c: var(--s5); }
-    .step.active, .step.done { background: var(--c); }
 
+    .step-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      gap: 8px;
+    }
+
+    /* Connecting line: from center of this dot to center of next dot */
+    .step-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 12px;          /* vertically aligned to center of 26px dot */
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.4s ease;
+      z-index: 0;
+    }
+    .step-item.done::after { background: var(--c); }
+
+    .step-dot {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.14);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      color: rgba(255,255,255,0.28);
+      position: relative; z-index: 1;
+      transition: all 0.35s ease;
+      flex-shrink: 0;
+      cursor: default;
+    }
+    .step-item.active .step-dot {
+      background: var(--c);
+      border-color: var(--c);
+      color: #fff;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 0 12px rgba(255,255,255,0.08);
+    }
+    .step-item.done .step-dot {
+      background: var(--c);
+      border-color: var(--c);
+      color: #fff;
+    }
+
+    .step-name {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.22);
+      text-align: center;
+      letter-spacing: 0.2px;
+      transition: color 0.3s ease;
+      line-height: 1.3;
+      max-width: 68px;
+    }
+    .step-item.active .step-name {
+      color: rgba(255,255,255,0.92);
+      font-weight: 700;
+    }
+    .step-item.done .step-name {
+      color: rgba(255,255,255,0.48);
+    }
+
+    /* ══ MESSAGES ══ */
     #messages {
       flex: 1;
       overflow-y: auto;
@@ -106,8 +165,8 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: 700; flex-shrink: 0; letter-spacing: 0.3px;
     }
-    .msg.agent .avatar { background: #e8edf8; color: var(--s1); }
-    .msg.user  .avatar { background: var(--s1); color: #fff; }
+    .msg.agent .avatar { background: #e8edf8; color: var(--stage-color); transition: color 0.3s; }
+    .msg.user  .avatar { background: var(--stage-color); color: #fff; transition: background 0.3s; }
 
     .bubble {
       padding: 13px 17px;
@@ -123,9 +182,10 @@
       border-top-left-radius: 4px;
     }
     .msg.user .bubble {
-      background: var(--s1);
+      background: var(--stage-color);
       color: #fff;
       border-top-right-radius: 4px;
+      transition: background 0.3s;
     }
     .bubble h1 { font-size:18px; margin:0 0 8px; }
     .bubble h2 { font-size:16px; margin:10px 0 6px; }
@@ -171,13 +231,58 @@
     .stage-desc {
       font-size: 13px;
       color: var(--muted);
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       line-height: 1.6;
     }
 
-    /* ── Input form inside card ── */
-    .stage-form { display: flex; flex-direction: column; gap: 10px; }
+    /* ── Field groups with pill labels ── */
+    .stage-form { display: flex; flex-direction: column; gap: 0; }
 
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      padding: 12px 0 4px;
+      border-top: 1px solid var(--border);
+    }
+    .field-group:first-child {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .field-group-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      padding: 3px 11px;
+      border-radius: 20px;
+      border: 1.5px solid;
+      align-self: flex-start;
+      margin-bottom: 2px;
+      line-height: 1.4;
+    }
+    /* small dot icon inside pill */
+    .field-group-pill::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    .group-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-left: 2px;
+    }
+
+    /* ── Individual field ── */
     .form-field { display: flex; flex-direction: column; gap: 4px; }
 
     .form-field label {
@@ -202,15 +307,13 @@
     }
     .form-field input:focus,
     .form-field textarea:focus {
-      border-color: var(--card-hex, var(--s1));
+      border-color: var(--card-hex, var(--stage-color));
     }
     .form-field textarea { min-height: 72px; }
 
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
     .stage-submit-btn {
-      margin-top: 6px;
-      background: var(--card-hex, var(--s1));
+      margin-top: 10px;
+      background: var(--card-hex, var(--stage-color));
       color: #fff;
       border: none;
       border-radius: 9px;
@@ -282,7 +385,7 @@
       align-items: center;
       gap: 6px;
     }
-    #hint-bar .dot { width:8px; height:8px; border-radius:50%; background:var(--s1); flex-shrink:0; transition:background .3s; }
+    #hint-bar .dot { width:8px; height:8px; border-radius:50%; background:var(--stage-color); flex-shrink:0; transition:background .3s; }
 
     /* ── Input row ── */
     #input-area {
@@ -297,12 +400,12 @@
       font-family:inherit; max-height:130px; line-height:1.5; color:var(--text);
       transition:border-color .2s;
     }
-    #user-input:focus { border-color: var(--s1); }
+    #user-input:focus { border-color: var(--stage-color); }
     #send-btn {
-      background: var(--s1); color:#fff; border:none; border-radius:12px;
+      background: var(--stage-color); color:#fff; border:none; border-radius:12px;
       width:44px; height:44px; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      align-self:flex-end; transition:filter .2s; flex-shrink:0;
+      align-self:flex-end; transition:background .3s, filter .2s; flex-shrink:0;
     }
     #send-btn:hover { filter:brightness(0.9); }
     #send-btn:disabled { background:#cbd5e1; cursor:default; filter:none; }
@@ -376,12 +479,28 @@
     </div>
   </div>
 
+  <!-- Named stepper: dots + connecting lines + always-visible labels -->
   <div id="stepper">
-    <div class="step active" data-color="1" title="Stage 1: Define Outcome"></div>
-    <div class="step"        data-color="2" title="Stage 2: Strategic Constraints"></div>
-    <div class="step"        data-color="3" title="Stage 3: Phases & Milestones"></div>
-    <div class="step"        data-color="4" title="Stage 4: Tasks & Subtasks"></div>
-    <div class="step"        data-color="5" title="Stage 5: Risk & Governance"></div>
+    <div class="step-item active" style="--c:#3b82f6">
+      <div class="step-dot" id="dot-1">1</div>
+      <div class="step-name">Goal &amp; Vision</div>
+    </div>
+    <div class="step-item" style="--c:#8b5cf6">
+      <div class="step-dot" id="dot-2">2</div>
+      <div class="step-name">Budget &amp; Team</div>
+    </div>
+    <div class="step-item" style="--c:#06b6d4">
+      <div class="step-dot" id="dot-3">3</div>
+      <div class="step-name">Phases</div>
+    </div>
+    <div class="step-item" style="--c:#f59e0b">
+      <div class="step-dot" id="dot-4">4</div>
+      <div class="step-name">Task Plan</div>
+    </div>
+    <div class="step-item" style="--c:#ef4444">
+      <div class="step-dot" id="dot-5">5</div>
+      <div class="step-name">Risk &amp; Review</div>
+    </div>
   </div>
 
   <div id="messages"></div>
@@ -423,71 +542,156 @@
 
 <script>
 // ════════════════════════════════════════
-// STAGE CONFIG  — fields become input forms
+// STAGE CONFIG — with grouped field pills
 // ════════════════════════════════════════
 const STAGE_CONFIG = {
   define_outcome: {
-    num: 1, hex: "#3b82f6", cssVar: "var(--s1)",
+    num: 1, hex: "#3b82f6",
     title: "Define Outcome",
     desc: "Tell us what you are building, who it is for, and what success looks like.",
-    fields: [
-      { key:"project_name",   label:"Project name",             placeholder:"e.g. Koru App",                            type:"input" },
-      { key:"audience",       label:"Who is it for?",           placeholder:"e.g. adults managing workplace stress",     type:"input" },
-      { key:"purpose",        label:"Core purpose",             placeholder:"e.g. guided meditation and breathing tools", type:"input" },
-      { key:"success_metric", label:"What does success look like?", placeholder:"e.g. 1,000 active users within 3 months of launch", type:"input" },
+    // Groups: each group gets a colored pill header
+    groups: [
+      {
+        label: "Project Identity",
+        fields: [
+          { key:"project_name", label:"Project name", placeholder:"e.g. Koru App", type:"input" },
+        ]
+      },
+      {
+        label: "Audience & Purpose",
+        fields: [
+          { key:"audience", label:"Who is it for?",  placeholder:"e.g. adults managing workplace stress",      type:"input" },
+          { key:"purpose",  label:"Core purpose",    placeholder:"e.g. guided meditation and breathing tools", type:"input" },
+        ]
+      },
+      {
+        label: "Success Criteria",
+        fields: [
+          { key:"success_metric", label:"What does success look like?", placeholder:"e.g. 1,000 active users within 3 months of launch", type:"input" },
+        ]
+      },
     ],
     assemble: f => `Project name: ${f.project_name}. It is for: ${f.audience}. Core purpose: ${f.purpose}. Success means: ${f.success_metric}.`
   },
+
   strategic_constraints: {
-    num: 2, hex: "#8b5cf6", cssVar: "var(--s2)",
+    num: 2, hex: "#8b5cf6",
     title: "Strategic Constraints",
     desc: "Share the practical limits that will shape the plan.",
-    fields: [
-      { key:"deadline",    label:"Deadline",           placeholder:"e.g. end of Q4 2026",                        type:"input" },
-      { key:"budget",      label:"Budget",             placeholder:"e.g. $50,000 or TBD",                        type:"input" },
-      { key:"team_size",   label:"Team size & roles",  placeholder:"e.g. 3 engineers, 1 PM, 1 designer",         type:"input" },
-      { key:"methodology", label:"Methodology",        placeholder:"e.g. Agile, Waterfall, Hybrid, no preference", type:"input" },
+    groups: [
+      {
+        label: "Timeline",
+        fields: [
+          { key:"deadline", label:"Deadline", placeholder:"e.g. end of Q4 2026", type:"input" },
+        ]
+      },
+      {
+        label: "Resources",
+        fields: [
+          { key:"budget",    label:"Budget",            placeholder:"e.g. $50,000 or TBD",                       type:"input" },
+          { key:"team_size", label:"Team size & roles",  placeholder:"e.g. 3 engineers, 1 PM, 1 designer",       type:"input" },
+        ]
+      },
+      {
+        label: "Process",
+        fields: [
+          { key:"methodology", label:"Methodology", placeholder:"e.g. Agile, Waterfall, Hybrid, no preference", type:"input" },
+        ]
+      },
     ],
     assemble: f => `Deadline: ${f.deadline}. Budget: ${f.budget}. Team: ${f.team_size}. Methodology: ${f.methodology}.`
   },
+
   phases_and_milestones: {
-    num: 3, hex: "#06b6d4", cssVar: "var(--s3)",
+    num: 3, hex: "#06b6d4",
     title: "Phases & Milestones",
     desc: "Break the project into major phases and name the key deliverable for each.",
-    fields: [
-      { key:"phases",       label:"Major phases (comma-separated)", placeholder:"e.g. Discovery, Design, Build, Launch",            type:"input" },
-      { key:"milestone_1",  label:"Deliverable for Phase 1",        placeholder:"e.g. Approved requirements document",              type:"input" },
-      { key:"milestone_2",  label:"Deliverable for Phase 2",        placeholder:"e.g. Signed-off design mockups",                   type:"input" },
-      { key:"timeline",     label:"Overall timeline",               placeholder:"e.g. 6 months total, Jan–Jun 2026",                type:"input" },
+    groups: [
+      {
+        label: "Phase Structure",
+        fields: [
+          { key:"phases",   label:"Major phases (comma-separated)", placeholder:"e.g. Discovery, Design, Build, Launch",  type:"input" },
+          { key:"timeline", label:"Overall timeline",               placeholder:"e.g. 6 months total, Jan–Jun 2026",      type:"input" },
+        ]
+      },
+      {
+        label: "Key Deliverables",
+        fields: [
+          { key:"milestone_1", label:"Deliverable for Phase 1", placeholder:"e.g. Approved requirements document", type:"input" },
+          { key:"milestone_2", label:"Deliverable for Phase 2", placeholder:"e.g. Signed-off design mockups",      type:"input" },
+        ]
+      },
     ],
     assemble: f => `Phases: ${f.phases}. Phase 1 deliverable: ${f.milestone_1}. Phase 2 deliverable: ${f.milestone_2}. Timeline: ${f.timeline}.`
   },
+
   tasks_and_subtasks: {
-    num: 4, hex: "#f59e0b", cssVar: "var(--s4)",
+    num: 4, hex: "#f59e0b",
     title: "Tasks & Subtasks",
     desc: "For each phase, list the work items, owners, and how long they take.",
-    fields: [
-      { key:"phase_focus", label:"Which phase are we breaking down?", placeholder:"e.g. Discovery",                                            type:"input" },
-      { key:"tasks",       label:"Main tasks (one per line)",         placeholder:"e.g.\nStakeholder interviews\nCompetitor analysis\nTechnical scoping", type:"textarea" },
-      { key:"owners",      label:"Who owns each task?",               placeholder:"e.g. PM owns interviews, Engineer owns scoping",           type:"input" },
-      { key:"durations",   label:"Estimated durations",               placeholder:"e.g. interviews: 3 days, scoping: 5 days",                 type:"input" },
+    groups: [
+      {
+        label: "Phase Focus",
+        fields: [
+          { key:"phase_focus", label:"Which phase are we breaking down?", placeholder:"e.g. Discovery", type:"input" },
+        ]
+      },
+      {
+        label: "Work Items",
+        fields: [
+          { key:"tasks", label:"Main tasks (one per line)", placeholder:"e.g.\nStakeholder interviews\nCompetitor analysis\nTechnical scoping", type:"textarea" },
+        ]
+      },
+      {
+        label: "Ownership & Duration",
+        fields: [
+          { key:"owners",    label:"Who owns each task?",   placeholder:"e.g. PM owns interviews, Engineer owns scoping",  type:"input" },
+          { key:"durations", label:"Estimated durations",   placeholder:"e.g. interviews: 3 days, scoping: 5 days",        type:"input" },
+        ]
+      },
     ],
     assemble: f => `Phase: ${f.phase_focus}. Tasks: ${f.tasks.replace(/\n/g,', ')}. Owners: ${f.owners}. Durations: ${f.durations}.`
   },
+
   risk_and_governance: {
-    num: 5, hex: "#ef4444", cssVar: "var(--s5)",
+    num: 5, hex: "#ef4444",
     title: "Risk & Governance",
     desc: "Identify what could go wrong and how the project will be monitored.",
-    fields: [
-      { key:"risks",          label:"Key risks (one per line)",  placeholder:"e.g.\nKey engineer leaves\nScope creep\nThird-party delays", type:"textarea" },
-      { key:"stakeholders",   label:"Stakeholders",              placeholder:"e.g. CEO, CTO, Head of Product",                           type:"input" },
-      { key:"kpis",           label:"Success KPIs",              placeholder:"e.g. 1,000 MAU, 4.5+ app store rating",                   type:"input" },
-      { key:"review_cadence", label:"Review cadence",            placeholder:"e.g. weekly standup, monthly steering committee",          type:"input" },
+    groups: [
+      {
+        label: "Key Risks",
+        fields: [
+          { key:"risks", label:"Risks (one per line)", placeholder:"e.g.\nKey engineer leaves\nScope creep\nThird-party delays", type:"textarea" },
+        ]
+      },
+      {
+        label: "Stakeholders",
+        fields: [
+          { key:"stakeholders", label:"Stakeholders", placeholder:"e.g. CEO, CTO, Head of Product", type:"input" },
+        ]
+      },
+      {
+        label: "Measurement & Cadence",
+        fields: [
+          { key:"kpis",           label:"Success KPIs",    placeholder:"e.g. 1,000 MAU, 4.5+ app store rating",          type:"input" },
+          { key:"review_cadence", label:"Review cadence",  placeholder:"e.g. weekly standup, monthly steering committee", type:"input" },
+        ]
+      },
     ],
     assemble: f => `Risks: ${f.risks.replace(/\n/g,'; ')}. Stakeholders: ${f.stakeholders}. KPIs: ${f.kpis}. Review cadence: ${f.review_cadence}.`
   },
-  complete: { num:6, hex:"#10b981", cssVar:"var(--done)", title:"Complete", desc:"", fields:[], assemble:()=>"" }
+
+  complete: { num:6, hex:"#10b981", title:"Complete", desc:"", groups:[], assemble:()=>"" }
 };
+
+// Flat fields array derived from groups (for backward-compat with submitStageForm)
+Object.values(STAGE_CONFIG).forEach(cfg => {
+  if (cfg.groups) {
+    cfg.fields = cfg.groups.flatMap(g => g.fields || []);
+  } else {
+    cfg.fields = cfg.fields || [];
+  }
+});
 
 const STAGE_ORDER = [
   "define_outcome","strategic_constraints","phases_and_milestones",
@@ -529,6 +733,22 @@ inputEl.addEventListener("keydown", e => {
 });
 
 // ════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════
+function esc(s) {
+  if (!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Mix hex color with white to produce a lighter tint
+function lightenHex(hex, t = 0.88) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgb(${Math.round(r+(255-r)*t)},${Math.round(g+(255-g)*t)},${Math.round(b+(255-b)*t)})`;
+}
+
+// ════════════════════════════════════════
 // MARKDOWN → SAFE HTML
 // ════════════════════════════════════════
 function md(text) {
@@ -548,11 +768,11 @@ function md(text) {
 }
 
 // ════════════════════════════════════════
-// STAGE INPUT CARD
+// STAGE INPUT CARD — grouped with pill labels
 // ════════════════════════════════════════
 function insertStageCard(stageKey) {
   const cfg = STAGE_CONFIG[stageKey];
-  if (!cfg || !cfg.fields.length) return;
+  if (!cfg || !cfg.groups || !cfg.groups.length) return;
 
   const cardId = "card-" + stageKey;
   if (document.getElementById(cardId)) return;
@@ -562,16 +782,33 @@ function insertStageCard(stageKey) {
   card.id = cardId;
   card.style.setProperty("--card-hex", cfg.hex);
 
-  // Build form fields HTML
-  let fieldsHtml = "";
-  cfg.fields.forEach(f => {
-    const inputHtml = f.type === "textarea"
-      ? `<textarea id="f_${stageKey}_${f.key}" placeholder="${esc(f.placeholder)}"></textarea>`
-      : `<input    id="f_${stageKey}_${f.key}" type="text" placeholder="${esc(f.placeholder)}" />`;
-    fieldsHtml += `
-      <div class="form-field">
-        <label for="f_${stageKey}_${f.key}">${esc(f.label)}</label>
-        ${inputHtml}
+  // Compute pill colors from stage hex
+  const pillBg     = lightenHex(cfg.hex, 0.88);
+  const pillBorder = cfg.hex;
+  const pillColor  = cfg.hex;
+
+  // Build grouped form HTML
+  let groupsHtml = "";
+  cfg.groups.forEach(g => {
+    let fieldsHtml = "";
+    g.fields.forEach(f => {
+      const inputHtml = f.type === "textarea"
+        ? `<textarea id="f_${stageKey}_${f.key}" placeholder="${esc(f.placeholder)}"></textarea>`
+        : `<input    id="f_${stageKey}_${f.key}" type="text" placeholder="${esc(f.placeholder)}" />`;
+      fieldsHtml += `
+        <div class="form-field">
+          <label for="f_${stageKey}_${f.key}">${esc(f.label)}</label>
+          ${inputHtml}
+        </div>`;
+    });
+
+    groupsHtml += `
+      <div class="field-group">
+        <span class="field-group-pill"
+              style="background:${pillBg}; border-color:${pillBorder}; color:${pillColor}">
+          ${esc(g.label)}
+        </span>
+        <div class="group-fields">${fieldsHtml}</div>
       </div>`;
   });
 
@@ -583,7 +820,7 @@ function insertStageCard(stageKey) {
     <div class="stage-card-body">
       <p class="stage-desc">${cfg.desc}</p>
       <div class="stage-form" id="form-${stageKey}">
-        ${fieldsHtml}
+        ${groupsHtml}
         <button class="stage-submit-btn" id="submit-${stageKey}"
                 onclick="submitStageForm('${stageKey}')">
           Send to Agent →
@@ -601,24 +838,19 @@ function insertStageCard(stageKey) {
 function submitStageForm(stageKey) {
   const cfg = STAGE_CONFIG[stageKey];
   const values = {};
-  let allFilled = true;
 
   cfg.fields.forEach(f => {
     const el = document.getElementById(`f_${stageKey}_${f.key}`);
-    const val = el ? el.value.trim() : "";
-    values[f.key] = val || "(not specified)";
-    if (!val) allFilled = false;
+    values[f.key] = (el ? el.value.trim() : "") || "(not specified)";
   });
 
   const message = cfg.assemble(values);
 
-  // Mark form as submitted
-  const form = document.getElementById(`form-${stageKey}`);
+  const form      = document.getElementById(`form-${stageKey}`);
   const submitted = document.getElementById(`submitted-${stageKey}`);
-  if (form) form.style.display = "none";
+  if (form)      form.style.display      = "none";
   if (submitted) submitted.style.display = "flex";
 
-  // Send as a chat message
   sendMessageText(message);
 }
 
@@ -626,7 +858,7 @@ function submitStageForm(stageKey) {
 // BUBBLE + STAGE TRANSITION
 // ════════════════════════════════════════
 function addAgentTurn(text) {
-  const parts = text.split("\n\n---\n");
+  const parts      = text.split("\n\n---\n");
   const replyText  = parts[0].trim();
   const dividerText = parts[1] ? parts[1].trim() : null;
 
@@ -682,26 +914,34 @@ function removeTyping() {
 }
 
 // ════════════════════════════════════════
-// PROGRESS STEPPER
+// PROGRESS STEPPER — named steps with dots
 // ════════════════════════════════════════
 function updateProgress(stageValue) {
   currentStage = stageValue;
   const cfg = STAGE_CONFIG[stageValue] || STAGE_CONFIG.define_outcome;
+  const idx = STAGE_ORDER.indexOf(stageValue);
 
-  const steps = document.querySelectorAll(".step");
-  const idx   = STAGE_ORDER.indexOf(stageValue);
-  steps.forEach((s, i) => {
-    s.classList.toggle("done",   i < idx);
-    s.classList.toggle("active", i === idx);
+  // Update global stage color CSS variable
+  document.documentElement.style.setProperty('--stage-color', cfg.hex);
+
+  // Update each step-item
+  const stepItems = document.querySelectorAll(".step-item");
+  stepItems.forEach((item, i) => {
+    const isDone   = i < idx;
+    const isActive = i === idx;
+    item.classList.toggle("done",   isDone);
+    item.classList.toggle("active", isActive);
+
+    // Show ✓ for completed steps, number for others
+    const dot = item.querySelector(".step-dot");
+    if (dot) dot.textContent = isDone ? "✓" : String(i + 1);
   });
 
-  hintDot.style.background  = cfg.hex;
-  hintText.textContent       = HINTS[stageValue] || "";
-  sendBtn.style.background   = cfg.hex;
+  hintText.textContent = HINTS[stageValue] || "";
 }
 
 // ════════════════════════════════════════
-// SEND  (two entry points)
+// SEND (two entry points)
 // ════════════════════════════════════════
 function sendMessage() {
   const text = inputEl.value.trim();
@@ -754,7 +994,7 @@ async function sendMessageText(text) {
 
   } catch {
     removeTyping();
-    appendBubble("agent", "⚠️ Could not reach the server. Is it running on port 8080?");
+    appendBubble("agent", "⚠️ Could not reach the server. Is it running?");
     sendBtn.disabled = false;
   }
 }
@@ -859,11 +1099,6 @@ function renderPlan(plan) {
   }
 
   body.innerHTML = html;
-}
-
-function esc(s) {
-  if (!s) return "";
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
 
 function backToChat() {
