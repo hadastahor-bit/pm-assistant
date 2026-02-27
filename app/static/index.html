@@ -832,11 +832,15 @@ function insertStageCard(stageKey) {
     </div>`;
 
   messagesEl.appendChild(card);
-  // Scroll to show the TOP of the card — user fills top-to-bottom and scrolls naturally to the button
+  // Directly calculate and set scroll position — scrollIntoView is unreliable in nested flex containers
   setTimeout(() => {
     const newCard = document.getElementById(cardId);
-    if (newCard) newCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 80);
+    if (newCard) {
+      const containerRect = messagesEl.getBoundingClientRect();
+      const cardRect      = newCard.getBoundingClientRect();
+      messagesEl.scrollTop += cardRect.top - containerRect.top - 12;
+    }
+  }, 120);
 }
 
 function submitStageForm(stageKey) {
